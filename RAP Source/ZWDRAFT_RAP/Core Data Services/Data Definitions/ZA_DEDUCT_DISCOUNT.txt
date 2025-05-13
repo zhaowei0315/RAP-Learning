@@ -1,0 +1,5 @@
+@EndUserText.label: 'Deduct Discount'
+define abstract entity ZA_DEDUCT_DISCOUNT
+{
+  discount : abap.int1;
+}

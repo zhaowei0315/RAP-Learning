@@ -1,0 +1,25 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Booking Supply projection view'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define view entity ZC_BOOKSUPPL_FELIX_M
+  as projection on ZI_BookSuppl_Felix_M
+{
+  key TravelId,
+  key BookingId,
+  key BookingSupplementId,
+      @ObjectModel.text: { element: [ 'SupplementText' ] }
+      SupplementId,
+      _SupplementText.Description as SupplementText : localized,
+      @Semantics.amount.currencyCode: 'CurrencyCode'
+      Price,
+      CurrencyCode,
+      _Currency._Text.CurrencyName : localized,
+      LastChangedAt,
+      /* Associations */
+      _Travel  : redirected to ZC_TRAVEL_FELIX_M, // No parent as key words
+      _Booking : redirected to parent ZC_BOOKING_FELIX_M,
+      _Currency,
+      _Supplement,
+      _SupplementText
+}

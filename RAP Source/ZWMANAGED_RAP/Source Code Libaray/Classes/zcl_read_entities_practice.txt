@@ -1,0 +1,172 @@
+CLASS zcl_read_entities_practice DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    INTERFACES if_oo_adt_classrun .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS zcl_read_entities_practice IMPLEMENTATION.
+
+
+  METHOD if_oo_adt_classrun~main.
+    "Read single entity
+    READ ENTITY zi_travel_felix_m
+      FROM VALUE #( ( %key-TravelId = '00008888'"Full Key
+                      %control = VALUE #( agencyid = if_abap_behv=>mk-on
+                                          customerid = if_abap_behv=>mk-on
+                                          begindate = if_abap_behv=>mk-on
+                                          enddate = if_abap_behv=>mk-on
+                                          bookingfee = if_abap_behv=>mk-on
+                                          totalprice = if_abap_behv=>mk-on
+                                          currencycode = if_abap_behv=>mk-on
+                                          description = if_abap_behv=>mk-on
+                                          overallstatus = if_abap_behv=>mk-on
+
+                                        )
+                    )
+                  )
+      RESULT DATA(lt_result_travel_short1)
+      FAILED DATA(lt_failed_sort1).
+
+    IF lt_failed_sort1 IS NOT INITIAL.
+      out->write( 'Read failed' ).
+    ELSE.
+      out->write( '========== 1 ==========' ).
+      out->write( lt_result_travel_short1 ).
+    ENDIF.
+
+
+    "Read single entity
+    READ ENTITY zi_travel_felix_m
+      FIELDS ( TravelId AgencyId CustomerId )
+      WITH VALUE #( ( %key-TravelId = '00008888' ) )"Full Key
+      RESULT DATA(lt_result_travel_short2)
+      FAILED DATA(lt_failed_sort2).
+
+    IF lt_failed_sort2 IS NOT INITIAL.
+      out->write( 'Read failed' ).
+    ELSE.
+      out->write( '========== 2 ==========' ).
+      out->write( lt_result_travel_short2 ).
+    ENDIF.
+
+
+    "Read single entity
+    READ ENTITY zi_travel_felix_m
+      ALL FIELDS
+      WITH VALUE #( ( %key-TravelId = '00008888' ) ( %key-TravelId = '00999995' ) )"Full Key
+      RESULT DATA(lt_result_travel_short3)
+      FAILED DATA(lt_failed_sort3).
+
+    IF lt_failed_sort3 IS NOT INITIAL.
+      out->write( 'Read failed' ).
+    ELSE.
+      out->write( '========== 3 ==========' ).
+      out->write( lt_result_travel_short3 ).
+    ENDIF.
+
+
+    "Read single sub-entity
+    READ ENTITY zi_travel_felix_m
+      BY \_Booking
+      ALL FIELDS
+      WITH VALUE #( ( %key-TravelId = '00008888' ) ( %key-TravelId = '00000023' ) )"Full Key
+      RESULT DATA(lt_result_travel_short4)
+      FAILED DATA(lt_failed_sort4).
+
+    IF lt_failed_sort4 IS NOT INITIAL.
+      out->write( 'Read failed' ).
+    ELSE.
+      out->write( '========== 4 ==========' ).
+      out->write( lt_result_travel_short4 ).
+    ENDIF.
+
+
+    "Read multiple entities
+    READ ENTITIES OF zi_travel_felix_m
+    ENTITY zi_travel_felix_m
+    ALL FIELDS
+      WITH VALUE #( ( %key-TravelId = '00008888' ) ( %key-TravelId = '00000023' ) )"Full Key
+      RESULT DATA(lt_result_travel_short5)
+
+    ENTITY zi_booking_felix_m
+    ALL FIELDS
+      WITH VALUE #( ( %key-TravelId = '00008888' %key-BookingId = '0010' ) ( %key-TravelId = '00000023' %key-BookingId = '0001' ) )"Full Key
+      RESULT DATA(lt_result_booking_short5)
+
+      FAILED DATA(lt_failed_sort5).
+
+    IF lt_failed_sort5 IS NOT INITIAL.
+      out->write( 'Read failed' ).
+    ELSE.
+      out->write( '========== 5 ==========' ).
+      out->write( lt_result_travel_short5 ).
+      out->write( lt_result_booking_short5 ).
+    ENDIF.
+
+
+    "动态读取
+    DATA: lt_optab          TYPE abp_behv_retrievals_tab,
+          lt_travel_import  TYPE TABLE FOR READ IMPORT zi_travel_felix_m,
+          lt_travel_result  TYPE TABLE FOR READ RESULT zi_travel_felix_m,
+          lt_booking_import TYPE TABLE FOR READ IMPORT zi_booking_felix_m,
+          lt_booking_result TYPE TABLE FOR READ RESULT zi_booking_felix_m.
+
+    lt_travel_import = VALUE #( ( %key-TravelId = '00000023'"Full Key
+                                  %control = VALUE #( agencyid = if_abap_behv=>mk-on
+                                                      customerid = if_abap_behv=>mk-on
+                                                      begindate = if_abap_behv=>mk-on
+                                                      enddate = if_abap_behv=>mk-on
+                                                      bookingfee = if_abap_behv=>mk-on
+                                                      totalprice = if_abap_behv=>mk-on
+                                                      currencycode = if_abap_behv=>mk-on
+                                                      description = if_abap_behv=>mk-on
+                                                      overallstatus = if_abap_behv=>mk-on
+                                                    )
+                                )
+                              ).
+
+    lt_booking_import = VALUE #( ( %key-TravelId = '00000023'
+                                  %control = VALUE #( travelid = if_abap_behv=>mk-on
+                                                      bookingid = if_abap_behv=>mk-on
+                                                      bookingdate = if_abap_behv=>mk-on
+                                                      customerid = if_abap_behv=>mk-on
+                                                      carrierid = if_abap_behv=>mk-on
+                                                      connectionid = if_abap_behv=>mk-on
+                                                      flightdate = if_abap_behv=>mk-on
+                                                      flightprice = if_abap_behv=>mk-on
+                                                      currencycode = if_abap_behv=>mk-on
+                                                      bookingstatus = if_abap_behv=>mk-on
+                                                    )
+                                )
+                              ).
+
+    lt_optab = VALUE #( ( op = if_abap_behv=>op-r-read
+                          entity_name = 'ZI_TRAVEL_FELIX_M'
+                          instances = REF #( lt_travel_import )
+                          results = REF #( lt_travel_result ) )
+                        ( op = if_abap_behv=>op-r-read_ba
+                          entity_name = 'ZI_TRAVEL_FELIX_M'
+                          sub_name = '_BOOKING'
+                          instances = REF #( lt_booking_import )
+                          results = REF #( lt_booking_result ) ) ).
+
+    READ ENTITIES OPERATIONS lt_optab FAILED DATA(lt_failed_sort6).
+
+    IF lt_failed_sort6 IS NOT INITIAL.
+      out->write( 'Read failed' ).
+    ELSE.
+      out->write( '========== 6 ==========' ).
+      out->write( lt_travel_result ).
+      out->write( lt_booking_result ).
+    ENDIF.
+
+  ENDMETHOD.
+ENDCLASS.

@@ -1,0 +1,157 @@
+CLASS zcl_modify_entities_practice DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    INTERFACES if_oo_adt_classrun .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS zcl_modify_entities_practice IMPLEMENTATION.
+
+
+  METHOD if_oo_adt_classrun~main.
+
+********************************************************************** Create
+    MODIFY ENTITY ZI_Travel_Felix_M
+      CREATE FROM VALUE #( (
+        %cid = 'cid1'
+
+        %data-BeginDate = '20250423'
+        %control-BeginDate = if_abap_behv=>mk-on "01 影子字段
+
+        %data-Description = 'Felix Test'
+        %control-Description = if_abap_behv=>mk-on "01 影子字段
+      ) )
+
+    CREATE BY \_Booking
+    FROM VALUE #( ( %cid_ref = 'cid1'"需要通过Association创建对象的时候，%cid是必须使用的
+                    %target = VALUE #( ( %cid = 'cid11'
+                                         %data-bookingdate = '20250423'
+                                         %control-BookingDate = if_abap_behv=>mk-on "01 影子字段
+                    ) )
+     ) )
+
+    FAILED FINAL(lt_failed_cre)
+    MAPPED FINAL(lt_mapped_cre)
+    REPORTED FINAL(lt_reported_cre).
+
+    IF lt_failed_cre IS NOT INITIAL.
+      out->write( 'lt_failed_cre' ).
+      out->write( lt_failed_cre ).
+    ELSE.
+      out->write( 'lt_mapped_cre' ).
+      out->write( lt_mapped_cre ).
+      out->write( 'lt_reported_cre' ).
+      out->write( lt_reported_cre ).
+
+      COMMIT ENTITIES.
+    ENDIF.
+
+
+
+    MODIFY ENTITY ZI_Travel_Felix_M
+      CREATE AUTO FILL CID WITH VALUE #( (
+*        %cid = 'cid1' "使用AUTO FILL CID WITH时，无需手工指定%cid
+
+        %data-BeginDate = '20250423'
+        %control-BeginDate = if_abap_behv=>mk-on "01 影子字段
+
+        %data-Description = 'Felix Test'
+        %control-Description = if_abap_behv=>mk-on "01 影子字段
+      ) )
+
+    CREATE BY \_Booking
+    FROM VALUE #( ( %cid_ref = 'cid1'"需要通过Association创建对象的时候，%cid是必须使用的
+                    %target = VALUE #( ( %cid = 'cid11'
+                                         %data-bookingdate = '20250423'
+                                         %control-BookingDate = if_abap_behv=>mk-on "01 影子字段
+                    ) )
+     ) )
+
+    FAILED FINAL(lt_failed_cre2)
+    MAPPED FINAL(lt_mapped_cre2)
+    REPORTED FINAL(lt_reported_cre2).
+
+    IF lt_failed_cre IS NOT INITIAL.
+      out->write( 'lt_failed_cre2' ).
+      out->write( lt_failed_cre2 ).
+    ELSE.
+      out->write( 'lt_mapped_cre2' ).
+      out->write( lt_mapped_cre2 ).
+      out->write( 'lt_reported_cre2' ).
+      out->write( lt_reported_cre2 ).
+
+      COMMIT ENTITIES.
+    ENDIF.
+
+********************************************************************** Update
+
+    MODIFY ENTITIES OF ZI_Travel_Felix_M"这种方式可以掺杂多种数据操作
+      ENTITY ZI_Travel_Felix_M
+      UPDATE FIELDS ( BeginDate )
+        WITH VALUE #( ( %key-TravelId = '00005092' BeginDate = '20250501' )  )
+
+      ENTITY ZI_Booking_Felix_M
+*      UPDATE SET FIELDS WITH VALUE #( ( %key-TravelId = '00005092' %key-BookingId = '0010' BookingDate = '20250501' )  )"这种方式性能差，建议使用下面的方式进行Update
+
+      UPDATE FIELDS ( BookingDate )
+        WITH VALUE #( ( %key-TravelId = '00005097' %key-BookingId = '0010' BookingDate = '20250501' )  )
+
+      ENTITY ZI_Travel_Felix_M
+        DELETE FROM VALUE #( ( %key-TravelId = '00005096' ) )
+      ENTITY ZI_Travel_Felix_M
+      CREATE AUTO FILL CID WITH VALUE #( (
+*        %cid = 'cid1' "使用AUTO FILL CID WITH时，无需手工指定%cid
+
+        %data-BeginDate = '20250423'
+        %control-BeginDate = if_abap_behv=>mk-on "01 影子字段
+
+        %data-Description = 'Felix Test'
+        %control-Description = if_abap_behv=>mk-on "01 影子字段
+      ) )
+    FAILED FINAL(lt_failed_upd)
+    MAPPED FINAL(lt_mapped_upd)
+    REPORTED FINAL(lt_reported_upd).
+
+    IF lt_failed_upd IS NOT INITIAL.
+      out->write( 'lt_failed_upd' ).
+      out->write( lt_failed_upd ).
+    ELSE.
+      out->write( 'lt_mapped_upd' ).
+      out->write( lt_mapped_upd ).
+      out->write( 'lt_reported_upd' ).
+      out->write( lt_reported_upd ).
+
+      COMMIT ENTITIES.
+    ENDIF.
+
+********************************************************************** Delete
+
+*    MODIFY ENTITY ZI_Travel_Felix_M
+*      DELETE FROM VALUE #( ( %key-TravelId = '00005084' ) )
+    MODIFY ENTITY ZI_Booking_Felix_M
+      DELETE FROM VALUE #( ( %key-TravelId = '00005084' %key-BookingId = '0010' ) )
+    FAILED FINAL(lt_failed_del)
+    MAPPED FINAL(lt_mapped_del)
+    REPORTED FINAL(lt_reported_del).
+
+    IF lt_failed_del IS NOT INITIAL.
+      out->write( 'lt_failed_del' ).
+      out->write( lt_failed_del ).
+    ELSE.
+      out->write( 'lt_mapped_del' ).
+      out->write( lt_mapped_del ).
+      out->write( 'lt_reported_del' ).
+      out->write( lt_reported_del ).
+
+      COMMIT ENTITIES.
+    ENDIF.
+
+  ENDMETHOD.
+ENDCLASS.

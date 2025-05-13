@@ -1,0 +1,48 @@
+CLASS lhc_zi_booksuppl_felix_m DEFINITION INHERITING FROM cl_abap_behavior_handler.
+
+  PRIVATE SECTION.
+
+    METHODS validateCurrencyCode FOR VALIDATE ON SAVE
+      IMPORTING keys FOR ZI_BookSuppl_Felix_M~validateCurrencyCode.
+
+    METHODS validateSupplementID FOR VALIDATE ON SAVE
+      IMPORTING keys FOR ZI_BookSuppl_Felix_M~validateSupplementID.
+
+    METHODS validatePrice FOR VALIDATE ON SAVE
+      IMPORTING keys FOR ZI_BookSuppl_Felix_M~validatePrice.
+
+    METHODS calculateTotalPrice FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR ZI_BookSuppl_Felix_M~calculateTotalPrice.
+
+ENDCLASS.
+
+CLASS lhc_zi_booksuppl_felix_m IMPLEMENTATION.
+
+  METHOD validateCurrencyCode.
+
+  ENDMETHOD.
+
+  METHOD validateSupplementID.
+
+  ENDMETHOD.
+
+  METHOD validatePrice.
+
+  ENDMETHOD.
+
+  METHOD calculateTotalPrice.
+    DATA lt_travel TYPE STANDARD TABLE OF zi_travel_felix_m WITH UNIQUE HASHED KEY key COMPONENTS TravelId.
+    lt_travel = CORRESPONDING #( keys DISCARDING DUPLICATES MAPPING TravelId = TravelId ).
+
+    "调用 internal action
+    MODIFY ENTITIES OF zi_travel_felix_m IN LOCAL MODE
+      ENTITY zi_travel_felix_m
+      EXECUTE reCalculateTotalPrice
+      FROM CORRESPONDING #( lt_travel )."这里需要传父Entity的Key
+  ENDMETHOD.
+
+ENDCLASS.
+
+*"* use this source file for the definition and implementation of
+*"* local helper classes, interface definitions and type
+*"* declarations

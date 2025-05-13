@@ -1,0 +1,33 @@
+CLASS zcl_read_practice_felix DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    INTERFACES if_oo_adt_classrun .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS zcl_read_practice_felix IMPLEMENTATION.
+
+
+  METHOD if_oo_adt_classrun~main.
+    READ ENTITY zi_traval_tech_u
+      BY \_Booking FIELDS ( AirlineID
+                            BookingDate
+                            BookingID
+                            CustomerID
+                            CurrencyCode )
+      WITH VALUE #( (  %key-TravelID = '0000004215' ) )
+      RESULT DATA(lt_read_bookings_ba)
+      LINK DATA(lt_link_table)
+      FAILED DATA(ls_failed_rba).
+
+    out->write( lt_read_bookings_ba ).
+    out->write( lt_link_table ).
+  ENDMETHOD.
+ENDCLASS.

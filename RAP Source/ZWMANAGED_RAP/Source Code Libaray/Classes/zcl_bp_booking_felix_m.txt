@@ -1,0 +1,131 @@
+CLASS lhc_zi_booking_felix_m DEFINITION INHERITING FROM cl_abap_behavior_handler.
+
+  PRIVATE SECTION.
+
+    METHODS earlynumbering_cba_Booksuppl FOR NUMBERING
+      IMPORTING entities FOR CREATE ZI_Booking_Felix_M\_Booksuppl.
+
+    METHODS get_instance_features FOR INSTANCE FEATURES
+      IMPORTING keys REQUEST requested_features FOR ZI_Booking_Felix_M RESULT result.
+
+    METHODS validateconnection FOR VALIDATE ON SAVE
+      IMPORTING keys FOR zi_booking_felix_m~validateconnection.
+
+    METHODS validatecurrencycode FOR VALIDATE ON SAVE
+      IMPORTING keys FOR zi_booking_felix_m~validatecurrencycode.
+
+    METHODS validatecustomer FOR VALIDATE ON SAVE
+      IMPORTING keys FOR zi_booking_felix_m~validatecustomer.
+
+    METHODS validateflightprice FOR VALIDATE ON SAVE
+      IMPORTING keys FOR zi_booking_felix_m~validateflightprice.
+
+    METHODS validatestatus FOR VALIDATE ON SAVE
+      IMPORTING keys FOR zi_booking_felix_m~validatestatus.
+
+    METHODS calculatetotalprice FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR zi_booking_felix_m~calculatetotalprice.
+
+ENDCLASS.
+
+CLASS lhc_zi_booking_felix_m IMPLEMENTATION.
+
+  METHOD earlynumbering_cba_Booksuppl.
+    DATA lv_max_booking_suppl_id TYPE /dmo/booking_supplement_id.
+
+    READ ENTITIES OF zi_travel_felix_m IN LOCAL MODE
+      ENTITY  zi_booking_felix_m BY \_BookSuppl
+      FROM CORRESPONDING #( entities )
+      LINK DATA(lt_link_data).
+
+
+    LOOP AT entities ASSIGNING FIELD-SYMBOL(<fs_entity_group>)
+                       GROUP BY <fs_entity_group>-%tky.
+
+      "找到现有BookingId的最大值
+      lv_max_booking_suppl_id = REDUCE #( INIT lv_max = CONV /dmo/booking_supplement_id( '0' )
+                                   FOR ls_link IN lt_link_data USING KEY entity
+                                                               WHERE ( source-TravelId = <fs_entity_group>-TravelId
+                                                                       AND source-BookingId = <fs_entity_group>-BookingId )
+                                   NEXT lv_max = COND /dmo/booking_supplement_id( WHEN lv_max < ls_link-target-BookingSupplementId
+                                                                       THEN ls_link-target-BookingSupplementId
+                                                                       ELSE lv_max )
+                                   ).
+
+      lv_max_booking_suppl_id = REDUCE #( INIT lv_max = lv_max_booking_suppl_id
+                                   FOR ls_entity IN entities USING KEY entity
+                                                             WHERE (    TravelId = <fs_entity_group>-TravelId
+                                                                    AND BookingId = <fs_entity_group>-BookingId )
+                                   FOR ls_booking_supplement IN ls_entity-%target
+                                   NEXT lv_max = COND /dmo/booking_id( WHEN lv_max < ls_booking_supplement-BookingSupplementId
+                                                                       THEN ls_booking_supplement-BookingSupplementId
+                                                                       ELSE lv_max )
+                                 ).
+
+      LOOP AT entities ASSIGNING FIELD-SYMBOL(<fs_entity>) USING KEY entity WHERE Travelid = <fs_entity_group>-TravelId
+                                                                              AND BookingId = <fs_entity_group>-BookingId.
+        LOOP AT <fs_entity>-%target ASSIGNING FIELD-SYMBOL(<fs_booking_supplement>).
+          APPEND CORRESPONDING #( <fs_booking_supplement> ) TO mapped-zi_booksuppl_felix_m ASSIGNING FIELD-SYMBOL(<fs_new_map_booking_suppl>).
+          IF <fs_booking_supplement>-BookingSupplementId IS INITIAL.
+            lv_max_booking_suppl_id += 1.
+            <fs_new_map_booking_suppl>-BookingSupplementId = lv_max_booking_suppl_id.
+          ENDIF.
+        ENDLOOP.
+      ENDLOOP.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+  METHOD get_instance_features.
+    READ ENTITIES OF zi_travel_felix_m IN LOCAL MODE
+      ENTITY zi_travel_felix_m BY \_Booking
+      FIELDS ( TravelId BookingStatus )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_booking).
+
+    result = VALUE #( FOR ls_booking IN lt_booking (
+                        %tky = ls_booking-%tky
+                        %features-%assoc-_BookSuppl = COND #( WHEN ls_booking-BookingStatus = 'B'
+                                                         THEN if_abap_behv=>fc-o-enabled
+                                                         ELSE if_abap_behv=>fc-o-disabled )
+    ) ).
+
+  ENDMETHOD.
+
+  METHOD validateConnection.
+
+
+  ENDMETHOD.
+
+  METHOD validateCurrencyCode.
+
+  ENDMETHOD.
+
+  METHOD validateCustomer.
+
+  ENDMETHOD.
+
+  METHOD validateFlightPrice.
+
+  ENDMETHOD.
+
+  METHOD validateStatus.
+
+  ENDMETHOD.
+
+  METHOD calculateTotalPrice.
+    DATA lt_travel TYPE STANDARD TABLE OF zi_travel_felix_m WITH UNIQUE HASHED KEY key COMPONENTS TravelId.
+    lt_travel = CORRESPONDING #( keys DISCARDING DUPLICATES MAPPING TravelId = TravelId ).
+
+    "调用 internal action
+    MODIFY ENTITIES OF zi_travel_felix_m IN LOCAL MODE
+      ENTITY zi_travel_felix_m
+      EXECUTE reCalculateTotalPrice
+      FROM CORRESPONDING #( lt_travel )."这里需要传父Entity的Key
+  ENDMETHOD.
+
+ENDCLASS.
+
+*"* use this source file for the definition and implementation of
+*"* local helper classes, interface definitions and type
+*"* declarations

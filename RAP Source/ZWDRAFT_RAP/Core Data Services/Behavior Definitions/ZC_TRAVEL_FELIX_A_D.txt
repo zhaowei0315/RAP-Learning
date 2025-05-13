@@ -1,0 +1,42 @@
+projection;
+strict ( 2 );
+use side effects;
+use draft;
+
+define behavior for ZC_TRAVEL_FELIX_A_D //alias <alias_name>
+{
+  use create;
+  use update;
+  use delete;
+
+  use action acceptTravel;
+  use action rejectTravel;
+  use action deductDiscount;
+
+  //启用draft所需要定义的action
+  use action Activate;
+  use action Discard;
+  use action Edit;
+  use action Prepare;
+  use action Resume;
+
+  use association _Booking { create; with draft; }
+}
+
+define behavior for ZC_BOOKING_FELIX_A_D //alias <alias_name>
+{
+  use update;
+  use delete;
+
+  use association _Travel { with draft; }
+  use association _BookingSupplement { create; with draft; }
+}
+
+define behavior for ZC_BOOKINGSUPPLEMENT_FELIX_A_D //alias <alias_name>
+{
+  use update;
+  use delete;
+
+  use association _Travel { with draft; }
+  use association _Booking { with draft; }
+}

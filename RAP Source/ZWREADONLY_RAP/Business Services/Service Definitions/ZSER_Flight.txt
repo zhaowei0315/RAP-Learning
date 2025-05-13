@@ -1,0 +1,6 @@
+@EndUserText.label: 'Service of Flight'
+define service ZSER_Flight {
+  expose ZI_CONNECTION_FELIX_R;
+  expose ZI_Flight_FELIX_R;
+  expose ZI_Carrier_Felix_R;
+}

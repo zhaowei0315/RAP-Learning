@@ -1,0 +1,36 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Booking projection view'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define view entity ZC_BOOKING_APPROVER_FELIX_M
+  as projection on ZI_Booking_Felix_M
+{
+  key TravelId,
+  key BookingId,
+      BookingDate,
+      @ObjectModel.text: { element: [ 'CustomerName' ] }
+      CustomerId,
+      _Customer.FirstName as CustomerName,
+      @ObjectModel.text: { element: [ 'CarrierName' ] }
+      CarrierId,
+      _Carrier.Name       as CarrierName,
+      ConnectionId,
+      FlightDate,
+      @Semantics.amount.currencyCode: 'CurrencyCode'
+      FlightPrice,
+      @ObjectModel.text: { element: [ 'CurrencyName' ] }
+      CurrencyCode,
+      _Currency._Text.CurrencyName             : localized,
+      @ObjectModel.text: { element: [ 'BookingStatusText' ] }
+      BookingStatus,
+      _Status._Text.Text  as BookingStatusText : localized,
+      LastChangedAt,
+      /* Associations */
+      _BookSuppl : redirected to composition child ZC_BOOKSUPPL_APPROVER_FELIX_M,
+      _Carrier,
+      _Connection,
+      _Currency,
+      _Customer,
+      _Status,
+      _Travel    : redirected to parent ZC_TRAVEL_APPROVER_FELIX_M
+}

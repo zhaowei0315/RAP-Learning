@@ -1,0 +1,77 @@
+@Metadata.layer: #CORE
+@Search.searchable: true
+@UI.headerInfo: {
+    typeName: 'Booking Supplement',
+    typeNamePlural: 'Booking Supplements',
+    title: {
+        type: #STANDARD,
+        label: 'Booking Supplement Details',
+        value: 'BookingSupplementId'
+    }
+}
+annotate view ZC_BOOKSUPPL_Approver_FELIX_M with
+{
+  @UI.facet: [{
+      id: 'BookingSupplement',
+      purpose: #STANDARD,
+      position: 10,
+      label: 'Booking Supplement Detail',
+      type: #IDENTIFICATION_REFERENCE
+  }]
+
+  @Search.defaultSearchElement: true
+  TravelId;
+
+  @Search.defaultSearchElement: true
+  BookingId;
+
+  @UI: {
+    lineItem: [ { position: 10, label: 'Booking Supplement ID', importance: #HIGH } ],
+    identification:[ { position: 10, label: 'Booking Supplement ID' } ]
+  }
+  BookingSupplementId;
+
+  @UI: {
+    lineItem: [ { position: 20, label: 'Supplement ID', importance: #HIGH } ],
+    identification:[ { position: 20, label: 'Supplement ID' } ]
+  }
+  @Consumption.valueHelpDefinition: [{ entity: {
+    name: '/DMO/I_Supplement_StdVH',
+    element: 'SupplementID'
+  },
+  additionalBinding: [
+    { element: 'SupplementID', localElement: 'SupplementId' },
+    { element: 'Price', localElement: 'Price' },
+    { element: 'CurrencyCode', localElement: 'CurrencyCode' }
+  ]}]
+  SupplementId;
+
+  //  @UI: {
+  //    lineItem: [ { position: 30, label: 'Description' } ],
+  //    identification:[ { position: 30, label: 'Description' } ]
+  //  }
+  @Search.defaultSearchElement: true
+  @Search.fuzzinessThreshold: 0.8
+  SupplementText;
+
+  @UI: {
+    lineItem: [ { position: 40 } ],
+    identification:[ { position: 40 } ]
+  }
+  Price;
+
+  @Consumption.valueHelpDefinition: [{ entity: {
+    name: 'I_Currency',
+    element: 'Currency'
+  } }]
+  CurrencyCode;
+  //  CurrencyName;
+  //  LastChangedAt;
+  /* Associations */
+  //  _Booking;
+  //  _Currency;
+  //  _Supplement;
+  //  _SupplementText;
+  //  _Travel;
+
+}

@@ -1,0 +1,149 @@
+CLASS lhc_ZR_BOOKINGSUPPLEMENT_FELIX DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS calcTotalPrice FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR zr_bookingsupplement_felix_d~calcTotalPrice.
+
+    METHODS setBookSupplNumber FOR DETERMINE ON SAVE
+      IMPORTING keys FOR zr_bookingsupplement_felix_d~setBookSupplNumber.
+    METHODS validateSupplement FOR VALIDATE ON SAVE
+      IMPORTING keys FOR zr_bookingsupplement_felix_d~validateSupplement.
+
+ENDCLASS.
+
+CLASS lhc_ZR_BOOKINGSUPPLEMENT_FELIX IMPLEMENTATION.
+
+  METHOD calcTotalPrice.
+
+    " Read all parent UUIDs
+    READ ENTITIES OF zr_travel_felix_d IN LOCAL MODE
+      ENTITY zr_bookingsupplement_felix_d BY \_Travel
+      FIELDS ( TravelUUID )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_travels).
+
+    " Trigger Re-Calculation on Root Node
+    MODIFY ENTITIES OF zr_travel_felix_d IN LOCAL MODE
+      ENTITY zr_travel_felix_d
+      EXECUTE reCalcTotalPrice
+      FROM CORRESPONDING #( lt_travels ).
+  ENDMETHOD.
+
+  METHOD setBookSupplNumber.
+    DATA lv_max_bookingsupplementid TYPE /dmo/booking_supplement_id.
+    DATA lt_bookingsupplements_update TYPE TABLE FOR UPDATE zr_travel_felix_d\\zr_bookingsupplement_felix_d.
+
+    " Read all bookings for the requested booking supplements
+    " If multiple booking supplements of the same booking are requested, the booking is returned only once.
+    READ ENTITIES OF zr_travel_felix_d IN LOCAL MODE
+      ENTITY zr_bookingsupplement_felix_d BY \_Booking
+      FIELDS ( BookingUUID )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_bookings).
+
+    " Process all affected bookings. Read respective booking supplements for one booking
+    LOOP AT lt_bookings INTO DATA(ls_booking).
+      READ ENTITIES OF zr_travel_felix_d IN LOCAL MODE
+        ENTITY zr_booking_felix_d BY \_BookingSupplement
+        FIELDS ( BookingSupplementID )
+        WITH VALUE #( ( %tky = ls_booking-%tky ) )
+        RESULT DATA(lt_bookingsupplements).
+
+      " find max used bockingID in all bookings of this travel
+      lv_max_bookingsupplementid = '00'.
+      LOOP AT lt_bookingsupplements INTO DATA(ls_bookingsupplements).
+        IF ls_bookingsupplements-BookingSupplementID > lv_max_bookingsupplementid.
+          lv_max_bookingsupplementid = ls_bookingsupplements-BookingSupplementID.
+        ENDIF.
+      ENDLOOP.
+
+      " Provide a booking supplement ID for all booking supplement of this booking that have none.
+      LOOP AT lt_bookingsupplements INTO ls_bookingsupplements WHERE BookingSupplementID IS INITIAL.
+        lv_max_bookingsupplementid += 1.
+        APPEND VALUE #( %tky = ls_bookingsupplements-%tky
+                        BookingSupplementID = lv_max_bookingsupplementid )
+               TO lt_bookingsupplements_update.
+      ENDLOOP.
+    ENDLOOP.
+
+    MODIFY ENTITIES OF zr_travel_felix_d IN LOCAL MODE
+      ENTITY zr_bookingsupplement_felix_d
+      UPDATE FIELDS ( BookingSupplementID )
+      WITH lt_bookingsupplements_update.
+
+  ENDMETHOD.
+
+  METHOD validateSupplement.
+    READ ENTITIES OF zr_travel_felix_d IN LOCAL MODE
+      ENTITY zr_bookingsupplement_felix_d
+      FIELDS ( SupplementID )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_bookingsupplements)
+      FAILED DATA(lt_read_failed).
+
+    failed = CORRESPONDING #( DEEP lt_read_failed ).
+
+    READ ENTITIES OF zr_travel_felix_d IN LOCAL MODE
+         ENTITY zr_bookingsupplement_felix_d BY \_Booking
+         FROM CORRESPONDING #( lt_bookingsupplements )
+         LINK DATA(lt_booksuppl_booking_links).
+
+    READ ENTITIES OF zr_travel_felix_d IN LOCAL MODE
+         ENTITY zr_bookingsupplement_felix_d BY \_Travel
+         FROM CORRESPONDING #( lt_bookingsupplements )
+         LINK DATA(lt_booksuppl_travel_links).
+
+    DATA lt_supplements TYPE SORTED TABLE OF /dmo/supplement WITH UNIQUE KEY supplement_id.
+
+    " Optimization of DB select: extract distinct non-initial customer IDs
+    lt_supplements = CORRESPONDING #( lt_bookingsupplements DISCARDING DUPLICATES MAPPING supplement_id = SupplementID EXCEPT * ).
+    DELETE lt_supplements WHERE supplement_id IS INITIAL.
+
+    IF lt_supplements IS NOT INITIAL.
+      " Check if customer ID exists
+      SELECT FROM /dmo/supplement
+        FIELDS supplement_id
+        FOR ALL ENTRIES IN @lt_supplements
+        WHERE supplement_id = @lt_supplements-supplement_id
+        INTO TABLE @DATA(valid_supplements).
+    ENDIF.
+
+    LOOP AT lt_bookingsupplements ASSIGNING FIELD-SYMBOL(<fs_bookingsupplement>).
+
+      APPEND VALUE #( %tky        = <fs_bookingsupplement>-%tky
+                      %state_area = 'VALIDATE_SUPPLEMENT' )
+             TO reported-zr_bookingsupplement_felix_d.
+
+      IF <fs_bookingsupplement>-SupplementID IS INITIAL.
+        APPEND VALUE #( %tky = <fs_bookingsupplement>-%tky ) TO failed-zr_bookingsupplement_felix_d.
+
+        APPEND VALUE #(
+            %tky                  = <fs_bookingsupplement>-%tky
+            %state_area           = 'VALIDATE_SUPPLEMENT'
+            %msg                  = NEW /dmo/cm_flight_messages( textid   = /dmo/cm_flight_messages=>enter_supplement_id
+                                                                 severity = if_abap_behv_message=>severity-error )
+            %path                 = VALUE #(
+                zr_booking_felix_d-%tky = lt_booksuppl_booking_links[ KEY id source-%tky = <fs_bookingsupplement>-%tky ]-target-%tky
+                zr_travel_felix_d-%tky  = lt_booksuppl_travel_links[  KEY id source-%tky = <fs_bookingsupplement>-%tky ]-target-%tky )
+            %element-SupplementID = if_abap_behv=>mk-on )
+               TO reported-zr_bookingsupplement_felix_d.
+
+      ELSEIF <fs_bookingsupplement>-SupplementID IS NOT INITIAL AND NOT line_exists( valid_supplements[ supplement_id = <fs_bookingsupplement>-SupplementID ] ).
+        APPEND VALUE #( %tky = <fs_bookingsupplement>-%tky ) TO failed-zr_bookingsupplement_felix_d.
+
+        APPEND VALUE #(
+            %tky                  = <fs_bookingsupplement>-%tky
+            %state_area           = 'VALIDATE_SUPPLEMENT'
+            %msg                  = NEW /dmo/cm_flight_messages( textid   = /dmo/cm_flight_messages=>supplement_unknown
+                                                                 severity = if_abap_behv_message=>severity-error )
+            %path                 = VALUE #(
+                zr_booking_felix_d-%tky = lt_booksuppl_booking_links[ KEY id source-%tky = <fs_bookingsupplement>-%tky ]-target-%tky
+                zr_travel_felix_d-%tky  = lt_booksuppl_travel_links[  KEY id source-%tky = <fs_bookingsupplement>-%tky ]-target-%tky )
+            %element-SupplementID = if_abap_behv=>mk-on )
+               TO reported-zr_bookingsupplement_felix_d.
+      ENDIF.
+
+    ENDLOOP.
+  ENDMETHOD.
+
+ENDCLASS.
