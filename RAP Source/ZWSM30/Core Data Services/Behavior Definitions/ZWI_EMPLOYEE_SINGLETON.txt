@@ -1,0 +1,54 @@
+managed implementation in class zbp_wi_employee_singleton unique;
+strict ( 2 );
+with draft;
+
+define behavior for ZWI_EMPLOYEE_SINGLETON //alias <alias_name>
+//persistent table t002
+with unmanaged save//解决没有persistent table的问题
+draft table zwemployee_s_dt
+lock master
+total etag maxChangedAt
+authorization master ( instance )
+##DRAFT_OP_NOT_REQUIRED
+//etag master <field_name>
+{
+  //  create ( authorization : global );
+  //  update;
+  //  delete;
+  field ( readonly ) EmployeeSingleton;
+  association _employee { create; with draft; }
+
+  draft action Edit;
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare;
+}
+
+define behavior for ZWI_EMPLOYEE //alias <alias_name>
+persistent table zwemployee
+draft table zwemployee_dt
+lock dependent by _sEmp
+authorization dependent by _sEmp
+//etag master <field_name>
+{
+  update;
+  delete;
+  field ( mandatory : create, readonly : update ) EmployeeId;
+  field ( readonly ) EmployeeSingleton, ChangedBy, LocalLastChangedAt, ChangedAt;
+  field ( mandatory ) FirstName;
+  association _sEmp { with draft; }
+
+  mapping for zwemployee
+    {
+      EmployeeId         = employee_id;
+      FirstName          = first_name;
+      LastName           = last_name;
+      Departmant         = departmant;
+      JoiningDate        = joining_date;
+      IsActive           = is_active;
+      ChangedBy          = changed_by;
+      LocalLastChangedAt = local_last_changed_at;
+      ChangedAt          = changed_at;
+    }
+}

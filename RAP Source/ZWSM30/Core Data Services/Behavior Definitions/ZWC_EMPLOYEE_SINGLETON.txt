@@ -1,0 +1,23 @@
+projection;
+strict ( 2 );
+use draft;
+
+define behavior for ZWC_EMPLOYEE_SINGLETON //alias <alias_name>
+{
+
+  use action Edit;
+  use action Activate;
+  use action Discard;
+  use action Resume;
+  use action Prepare;
+
+  use association _employee { create; with draft; }
+}
+
+define behavior for ZWC_EMPLOYEE //alias <alias_name>
+{
+  use update;
+  use delete;
+
+  use association _sEmp { with draft; }
+}

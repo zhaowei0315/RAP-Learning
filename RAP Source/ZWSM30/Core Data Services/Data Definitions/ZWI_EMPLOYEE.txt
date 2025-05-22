@@ -1,0 +1,31 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Employee Interface view'
+@Metadata.ignorePropagatedAnnotations: true
+@ObjectModel.usageType:{
+    serviceQuality: #X,
+    sizeCategory: #S,
+    dataClass: #MIXED
+}
+define view entity ZWI_EMPLOYEE as select from zwemployee
+association to parent ZWI_EMPLOYEE_SINGLETON as _sEmp
+  on $projection.EmployeeSingleton =  _sEmp.EmployeeSingleton
+{
+    key employee_id as EmployeeId,
+    1 as EmployeeSingleton,
+    first_name as FirstName,
+    last_name as LastName,
+    departmant as Departmant,
+    joining_date as JoiningDate,
+    is_active as IsActive,
+    @Semantics.user.lastChangedBy: true
+    changed_by as ChangedBy,
+    //etag
+    @Semantics.systemDateTime.localInstanceLastChangedAt: true
+    local_last_changed_at as LocalLastChangedAt,
+    //total
+    @Semantics.systemDateTime.lastChangedAt: true
+    changed_at as ChangedAt,
+    
+    _sEmp
+}

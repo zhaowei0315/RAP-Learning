@@ -1,0 +1,15 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Employee Singleton Interface View'
+@Metadata.ignorePropagatedAnnotations: true
+define root view entity ZWI_EMPLOYEE_SINGLETON
+  as select from    I_Language
+    left outer join zwemployee as zwemp on 1 = 1
+  composition [0..*] of ZWI_EMPLOYEE as _employee
+{
+      //这就是一个虚拟的Root Entity，目的就是让ZWI_EMPLOYEE成为list（Subentity）
+  key 1                     as EmployeeSingleton,
+      max(zwemp.changed_at) as maxChangedAt,
+      _employee
+}
+where
+  I_Language.Language = $session.system_language

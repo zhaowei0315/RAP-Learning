@@ -1,0 +1,67 @@
+@Metadata.layer: #CORE
+@UI: {
+    headerInfo: { typeName: 'Employee',
+                  typeNamePlural: 'Employees',
+                  title: { type: #STANDARD,
+                           value: 'EmployeeId'//主键字段名
+                         }
+                }
+}
+annotate entity ZWC_EMPLOYEE with
+{
+  @UI.facet: [ { id: 'Employee',
+                 purpose: #STANDARD,
+                 type: #IDENTIFICATION_REFERENCE,
+                 label: 'Employee Details',
+                 position: 10 
+               } ]
+                 
+  @UI:{
+    lineItem: [{ position: 10 }],
+    identification: [{ position: 10 }]
+  }
+  @EndUserText.label : 'Employee ID'
+  EmployeeId;
+
+  //  @UI:{
+  //    lineItem: [{ position: 20 }],
+  //    identification: [{ position: 20 }]
+  //  }
+  //  EmployeeSingleton;
+
+  @UI:{
+    lineItem: [{ position: 30 }],
+    identification: [{ position: 30 }]
+  }
+  @EndUserText.label : 'First Name'
+  FirstName;
+
+  @UI:{
+    lineItem: [{ position: 40 }],
+    identification: [{ position: 40 }]
+  }
+  @EndUserText.label : 'Last Name'
+  LastName;
+
+  @UI:{
+    lineItem: [{ position: 50 }],
+    identification: [{ position: 50 }]
+  }
+  @EndUserText.label : 'Departmant'
+  Departmant;
+
+  @UI:{
+    lineItem: [{ position: 60 }],
+    identification: [{ position: 60 }]
+  }
+  @EndUserText.label : 'Joining Date'
+  JoiningDate;
+
+  @UI:{
+    lineItem: [{ position: 70 }],
+    identification: [{ position: 70 }]
+  }
+  @EndUserText.label : 'Active Employee'
+  IsActive;
+
+}

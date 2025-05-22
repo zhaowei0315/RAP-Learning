@@ -1,0 +1,21 @@
+@EndUserText.label : 'Draft table for entity ZWI_EMPLOYEE'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zwemployee_dt {
+
+  key mandt          : mandt not null;
+  key employeeid     : abap.char(10) not null;
+  employeesingleton  : abap.int1;
+  firstname          : abap.char(50);
+  lastname           : abap.char(50);
+  departmant         : abap.char(20);
+  joiningdate        : abap.dats;
+  isactive           : abap.char(1);
+  changedby          : abap.char(12);
+  locallastchangedat : abp_locinst_lastchange_tstmpl;
+  changedat          : abp_lastchange_tstmpl;
+  "%admin"           : include sych_bdl_draft_admin_inc;
+
+}

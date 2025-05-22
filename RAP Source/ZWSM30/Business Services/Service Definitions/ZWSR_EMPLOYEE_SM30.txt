@@ -1,0 +1,5 @@
+@EndUserText.label: 'SM30 Employee data'
+define service ZWSR_EMPLOYEE_SM30 {
+  expose ZWC_EMPLOYEE_SINGLETON;
+  expose ZWC_EMPLOYEE;
+}

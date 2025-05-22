@@ -1,0 +1,12 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Conjunction View'
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define root view entity ZWC_EMPLOYEE_SINGLETON
+  provider contract transactional_query as projection on ZWI_EMPLOYEE_SINGLETON
+{
+    key EmployeeSingleton,
+    maxChangedAt,
+    /* Associations */
+    _employee : redirected to composition child ZWC_EMPLOYEE
+}

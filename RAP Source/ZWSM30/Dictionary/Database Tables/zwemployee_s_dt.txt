@@ -1,0 +1,13 @@
+@EndUserText.label : 'Draft table for entity ZWI_EMPLOYEE_SINGLETON'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zwemployee_s_dt {
+
+  key mandt             : mandt not null;
+  key employeesingleton : abap.int1 not null;
+  maxchangedat          : abap.dec(21,7);
+  "%admin"              : include sych_bdl_draft_admin_inc;
+
+}
