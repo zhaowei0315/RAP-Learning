@@ -14,5 +14,7 @@ https://developers.sap.com/tutorials/abap-environment-business-configuration-obj
 #### have delivery class C
 #### allow data maintenance
 #### (optional) have a timestamp field with data element ABP_LOCINST_LASTCHANGE_TSTMPL. If the table doesn't contain this field, the concurrency control is not active
+##### local_last_changed_at : abp_locinst_lastchange_tstmpl;
 #### have a timestamp field with data element ABP_LASTCHANGE_TSTMPL. If the table doesn't contain this field, the entire ETag is handled by CDS entity I_CstmBizConfignLastChgd
+##### last_changed_at       : abp_lastchange_tstmpl;
 #### key fields use domain for character-like
