@@ -7,7 +7,7 @@ https://www.bilibili.com/video/BV1oVN3ehEbN?spm_id_from=333.788.videopod.episode
 
 
 ## Generate SM30 - Create Business Configuration Maintenance Object  
-https://developers.sap.com/tutorials/abap-environment-business-configuration-object..html  
+https://developers.sap.com/group.abap-env-factory.html    
 
 ### All tables must fulfill the following requirements:  
 #### 1.Have a client key field
