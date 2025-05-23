@@ -9,12 +9,16 @@ https://www.bilibili.com/video/BV1oVN3ehEbN?spm_id_from=333.788.videopod.episode
 ## Generate SM30 - Create Business Configuration Maintenance Object  
 https://developers.sap.com/tutorials/abap-environment-business-configuration-object..html  
 
-### All tables (Business Configuration Maintenance Object) must fulfill the following requirements:  
-#### have a client key field
-#### have delivery class C
-#### allow data maintenance
-#### (optional) have a timestamp field with data element ABP_LOCINST_LASTCHANGE_TSTMPL. If the table doesn't contain this field, the concurrency control is not active
-##### local_last_changed_at : abp_locinst_lastchange_tstmpl;
-#### have a timestamp field with data element ABP_LASTCHANGE_TSTMPL. If the table doesn't contain this field, the entire ETag is handled by CDS entity I_CstmBizConfignLastChgd
-##### last_changed_at       : abp_lastchange_tstmpl;
-#### key fields use domain for character-like
+### All tables must fulfill the following requirements:  
+#### 1.Have a client key field
+  -- key client            : abap.clnt not null;
+#### 2.Key fields use data element and domain for character-like
+#### 3.Have delivery class C
+##### @AbapCatalog.deliveryClass : #C
+#### 4.Allow data maintenance
+##### @AbapCatalog.dataMaintenance : #ALLOWED
+#### 5.(optional) Have a timestamp field with data element ABP_LOCINST_LASTCHANGE_TSTMPL. If the table doesn't contain this field, the concurrency control is not active
+  -- local_last_changed_at : abp_locinst_lastchange_tstmpl;
+#### 6.Have a timestamp field with data element ABP_LASTCHANGE_TSTMPL. If the table doesn't contain this field, the entire ETag is handled by CDS entity I_CstmBizConfignLastChgd
+  -- last_changed_at       : abp_lastchange_tstmpl;
+
